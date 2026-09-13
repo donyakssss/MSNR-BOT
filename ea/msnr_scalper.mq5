@@ -38,7 +38,10 @@ double GetRiskPercentByMode()
 
 double GetMAValue(string symbol, int tf, int period, int shift)
 {
-   return iMA(symbol, tf, period, 0, MODE_SMA, PRICE_CLOSE, shift);
+   int ma_shift = 0;
+   ENUM_MA_METHOD ma_method = MODE_SMA;
+   ENUM_APPLIED_PRICE applied_price = PRICE_CLOSE;
+   return iMA(symbol, (ENUM_TIMEFRAMES)tf, period, ma_shift, ma_method, applied_price, shift);
 }
 
 double CalculateLotSize(double riskPercent, double slPips)
@@ -123,7 +126,7 @@ void OnTick()
    int currentDay = TimeDay(TimeCurrent());
    int lastTradeDay = TimeDay(lastTradeTime);
 
-   if(lastTradeTime > 0 && currentDay != lastTradeDay)
+   if(lastTradeTime != 0 && currentDay != lastTradeDay)
       tradesToday = 0;
 
    if(tradesToday >= MaxTradesPerSymbolPerDay && MaxTradesPerSymbolPerDay > 0)
