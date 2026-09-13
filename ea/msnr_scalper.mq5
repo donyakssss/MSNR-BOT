@@ -10,7 +10,7 @@
 
 input int InpFastMA = 5;
 input int InpSlowMA = 20;
-input ENUM_TIMEFRAMES InpTimeframe = PERIOD_M5;
+input int InpTimeframe = PERIOD_M5;
 
 input bool TradeOnM1 = true;
 input bool TradeOnM5 = true;
@@ -36,7 +36,7 @@ double GetRiskPercentByMode()
    return RiskAverage;
 }
 
-double GetMAValue(string symbol, ENUM_TIMEFRAMES tf, int period, int shift)
+double GetMAValue(string symbol, int tf, int period, int shift)
 {
    return iMA(symbol, tf, period, 0, MODE_SMA, PRICE_CLOSE, shift);
 }
@@ -120,7 +120,10 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {
-   if(lastTradeTime > 0 && TimeDay(TimeCurrent()) != TimeDay(lastTradeTime))
+   int currentDay = TimeDay(TimeCurrent());
+   int lastTradeDay = TimeDay(lastTradeTime);
+
+   if(lastTradeTime > 0 && currentDay != lastTradeDay)
       tradesToday = 0;
 
    if(tradesToday >= MaxTradesPerSymbolPerDay && MaxTradesPerSymbolPerDay > 0)
