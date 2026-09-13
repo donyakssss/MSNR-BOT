@@ -44,6 +44,17 @@ double GetMAValue(string symbol, int tf, int period, int shift)
    return iMA(symbol, (ENUM_TIMEFRAMES)tf, period, ma_shift, ma_method, applied_price, shift);
 }
 
+double GetMinAllowedStopDistance()
+{
+   double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0) point = 0.00001;
+
+   int stopLevel = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   if(stopLevel <= 0) return 0.0;
+
+   return point * (double)stopLevel;
+}
+
 double CalculateLotSize(double riskPercent, double slPips)
 {
    double balance = AccountInfoDouble(ACCOUNT_BALANCE);
@@ -92,9 +103,19 @@ void PlaceOrder(bool isBuy)
    double price = isBuy ? SymbolInfoDouble(_Symbol, SYMBOL_ASK) : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   double minStopDistance = GetMinAllowedStopDistance();
 
-   double sl = isBuy ? price - StopLossPips * point * 10.0 : price + StopLossPips * point * 10.0;
-   double tp = isBuy ? price + TakeProfitPips * point * 10.0 : price - TakeProfitPips * point * 10.0;
+   double slDistance = MathMax(StopLossPips * point * 10.0, minStopDistance);
+   double tpDistance = MathMax(TakeProfitPips * point * 10.0, minStopDistance);
+
+   double sl = isBuy ? price - slDistance : price + slDistance;
+   double tp = isBuy ? price + tpDistance : price - tpDistance;
+
+   if(MathAbs(price - sl) < minStopDistance)
+      sl = isBuy ? price - minStopDistance : price + minStopDistance;
+
+   if(MathAbs(tp - price) < minStopDistance)
+      tp = isBuy ? price + minStopDistance : price - minStopDistance;
 
    sl = NormalizeDouble(sl, digits);
    tp = NormalizeDouble(tp, digits);

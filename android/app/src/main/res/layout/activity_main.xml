@@ -9,7 +9,7 @@
         android:id="@+id/btnPick"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pick Image & Upload" />
+        android:text="Pick Image &amp; Upload" />
 
     <ImageView
         android:id="@+id/imgPreview"

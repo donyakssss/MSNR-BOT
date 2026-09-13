@@ -11,6 +11,10 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.InputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -53,10 +57,11 @@ class MainActivity : AppCompatActivity() {
                     imgPreview.setImageBitmap(bitmap)
 
                     // save to temp file
-                    val tmp = File.createTempFile("upload",".png", cacheDir)
+                    val tmp = File.createTempFile("upload", ".png", cacheDir)
                     val out = FileOutputStream(tmp)
                     bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 90, out)
-                    out.flush(); out.close()
+                    out.flush()
+                    out.close()
 
                     // upload in background
                     tvResult.text = "Uploading..."
@@ -73,12 +78,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun uploadImage(file: File, cb: (Boolean, String)->Unit) {
+    private fun uploadImage(file: File, cb: (Boolean, String) -> Unit) {
         thread {
             val client = OkHttpClient()
             val mediaType = "image/png".toMediaTypeOrNull()
             val body = MultipartBody.Builder().setType(MultipartBody.FORM)
-                .addFormDataPart("image", file.name, RequestBody.create(mediaType, file))
+                .addFormDataPart("image", file.name, file.asRequestBody(mediaType))
                 .build()
             val req = Request.Builder().url(serverUrl).post(body).build()
             try {
