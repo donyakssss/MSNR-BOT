@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: msnr-signal-server
+    env: python
+    plan: free
+    repo: <YOUR_GIT_REPO_URL>
+    buildCommand: pip install -r server/requirements.txt
+    startCommand: gunicorn server.app:app --bind 0.0.0.0:$PORT
+    root: .

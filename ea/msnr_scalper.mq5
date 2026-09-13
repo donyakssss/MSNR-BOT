@@ -160,6 +160,34 @@ void LogTradeExit(bool isBuy,double entry,double exit,double lots)
      }
   }
 
+// Minimal OnTradeTransaction to record closed deals to file
+void OnTradeTransaction(const MqlTradeTransaction &trans,const MqlTradeRequest &request,const MqlTradeResult &result)
+  {
+   // record deal add events
+   if(trans.type==TRADE_TRANSACTION_DEAL_ADD)
+     {
+      ulong deal = trans.deal;
+      if(deal>0)
+        {
+         // select deal from history
+         if(HistoryDealSelect(deal))
+           {
+            long entry = (long)HistoryDealGetInteger(deal, DEAL_ENTRY);
+            double price = HistoryDealGetDouble(deal, DEAL_PRICE);
+            double volume = HistoryDealGetDouble(deal, DEAL_VOLUME);
+            // entry==DEAL_ENTRY_OUT indicates an exit deal
+            if(entry==DEAL_ENTRY_OUT)
+              {
+               // attempt to map to buy/sell by checking deal type
+               long type = (long)HistoryDealGetInteger(deal, DEAL_TYPE);
+               bool isBuy = (type==DEAL_TYPE_BUY || type==DEAL_TYPE_BUY_LIMIT || type==DEAL_TYPE_BUY_STOP);
+               LogTradeExit(isBuy, 0.0, price, volume);
+              }
+           }
+        }
+     }
+  }
+
 
 int OnInit()
   {
